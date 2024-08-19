@@ -4,7 +4,9 @@ import { StyleSheet, Text, View } from 'react-native';
 export default function App() {
   return (
     <View style={styles.container}>
-      <Text>이거 진짜로 되나요?</Text>
+      <Text>Hello World</Text>
+      <Text>새롭게 시작하는 React-native</Text>
+      <Text>새롭게 시작하는 React-native</Text>
       <StatusBar style="auto" />
     </View>
   );
