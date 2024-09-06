@@ -10,12 +10,15 @@ export default function App() {
   const [location, setLocation] = useState();
   const [ok, setOk] = useState(true);
 
+  // 위치정보에 대한 데이터 가지고 오기
   const ask = async () => {
     const { granted } = await Location.requestForegroundPermissionsAsync();
     // console.log(permission); // {"canAskAgain": true, "expires": "never", "granted": true, "status": "granted"}
     if (!granted) {
       setOk(false);
     }
+    // const aa = await Location.getCurrentPositionAsync({ accuracy: 5 });
+    // console.log(aa);
     const {
       coords: { latitude, longitude },
     } = await Location.getCurrentPositionAsync({ accuracy: 5 });
@@ -24,6 +27,7 @@ export default function App() {
     setCity(location[0].city);
   };
 
+  // 실행되고 실행
   useEffect(() => {
     ask();
   }, []);
@@ -39,11 +43,11 @@ export default function App() {
           <Text style={styles.description}>Sunny</Text>
         </View>
         <View style={styles.day}>
-          <Text style={styles.temp}>27</Text>
+          <Text style={styles.temp}>29</Text>
           <Text style={styles.description}>Sunny</Text>
         </View>
         <View style={styles.day}>
-          <Text style={styles.temp}>27</Text>
+          <Text style={styles.temp}>30</Text>
           <Text style={styles.description}>Sunny</Text>
         </View>
         <View style={styles.day}>
