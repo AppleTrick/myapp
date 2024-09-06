@@ -5,13 +5,16 @@ import { ScrollView, StyleSheet, Text, View, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
+const API_KEY = 'ad4be890c70a3d43fcf896515d0a9db2';
+// const API_KEY = process.env.REACT_APP_WEATHER_KEY;
+
 export default function App() {
   const [city, setCity] = useState<null | string>('Loading');
-  const [location, setLocation] = useState();
+  const [days, setDays] = useState([]);
   const [ok, setOk] = useState(true);
 
   // 위치정보에 대한 데이터 가지고 오기
-  const ask = async () => {
+  const getWeather = async () => {
     const { granted } = await Location.requestForegroundPermissionsAsync();
     // console.log(permission); // {"canAskAgain": true, "expires": "never", "granted": true, "status": "granted"}
     if (!granted) {
@@ -25,11 +28,16 @@ export default function App() {
 
     const location = await Location.reverseGeocodeAsync({ latitude, longitude }, { useGoogleMaps: false });
     setCity(location[0].city);
+
+    // 날씨 API 로 가지고 오기
+    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`);
+    const json = await response.json();
+    setDays(json.weather);
   };
 
   // 실행되고 실행
   useEffect(() => {
-    ask();
+    getWeather();
   }, []);
 
   return (
@@ -40,18 +48,6 @@ export default function App() {
       <ScrollView pagingEnabled horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.weather}>
         <View style={styles.day}>
           <Text style={styles.temp}>28</Text>
-          <Text style={styles.description}>Sunny</Text>
-        </View>
-        <View style={styles.day}>
-          <Text style={styles.temp}>29</Text>
-          <Text style={styles.description}>Sunny</Text>
-        </View>
-        <View style={styles.day}>
-          <Text style={styles.temp}>30</Text>
-          <Text style={styles.description}>Sunny</Text>
-        </View>
-        <View style={styles.day}>
-          <Text style={styles.temp}>27</Text>
           <Text style={styles.description}>Sunny</Text>
         </View>
       </ScrollView>
