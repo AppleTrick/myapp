@@ -5,23 +5,18 @@ import { ScrollView, StyleSheet, Text, View, Dimensions } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const API_KEY = 'ad4be890c70a3d43fcf896515d0a9db2';
-// const API_KEY = process.env.REACT_APP_WEATHER_KEY;
-
 export default function App() {
   const [city, setCity] = useState<null | string>('Loading');
-  const [days, setDays] = useState([]);
+  const [days, setDays] = useState([]); // 날씨를 배열형식으로 저장함
   const [ok, setOk] = useState(true);
 
   // 위치정보에 대한 데이터 가지고 오기
   const getWeather = async () => {
     const { granted } = await Location.requestForegroundPermissionsAsync();
-    // console.log(permission); // {"canAskAgain": true, "expires": "never", "granted": true, "status": "granted"}
     if (!granted) {
       setOk(false);
     }
-    // const aa = await Location.getCurrentPositionAsync({ accuracy: 5 });
-    // console.log(aa);
+
     const {
       coords: { latitude, longitude },
     } = await Location.getCurrentPositionAsync({ accuracy: 5 });
@@ -29,13 +24,58 @@ export default function App() {
     const location = await Location.reverseGeocodeAsync({ latitude, longitude }, { useGoogleMaps: false });
     setCity(location[0].city);
 
-    // 날씨 API 로 가지고 오기
-    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`);
-    const json = await response.json();
-    setDays(json.weather);
+    // api 키
+    const apiKey = 'YUrGMy0V%2BGWA4GKHG9QRq2bT3GqSRCeMa62ZdYVwD55XvIiZOi6uwwRpxIOk43tfLmPrUStNlSceZzdWk1UnZQ%3D%3D';
+
+    const url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${apiKey}&pageNo=1&numOfRows=10&dataType=JSON&base_date=${new Date().getFullYear()}${
+      new Date().getMonth() + 1
+    }${new Date().getDate()}&base_time=${new Date().getHours()}&nx=55&ny=127`;
+
+    try {
+      const response = await fetch(url);
+      console.log(url);
+      const json = await response.json();
+      console.log(json);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  // 실행되고 실행
+  const ask = async () => {
+    // 1. 권한에 대한 여부확인
+    // const premission = await Location.requestForegroundPermissionsAsync();
+    // console.log(premission);
+    // {"canAskAgain": true, "expires": "never", "granted": true, "status": "granted"}
+    // grant => 권한에 대한 변경권
+    // const { granted } = await Location.requestForegroundPermissionsAsync();
+    // if (!granted) {
+    //   setOk(false);
+    // }
+    // 위치정보 가지고 오기
+    // const loaction = await Location.getCurrentPositionAsync({ accuracy: 5 });
+    // console.log(loaction);
+    // {
+    //   "coords":
+    //       {
+    //         "accuracy": 5,
+    //         "altitude": 0,
+    //         "altitudeAccuracy": -1,
+    //         "heading": -1,
+    //         "latitude": 37.785834,
+    //         "longitude": -122.406417,
+    //         "speed": -1
+    //       },
+    //     "timestamp": 1730456103939.91
+    // }
+    // const {
+    //   coords: { latitude, longitude },
+    // } = await Location.getCurrentPositionAsync({ accuracy: 5 });
+    // 3. 위치정보 다시 가지고 오기
+    // const location = await Location.reverseGeocodeAsync({ latitude, longitude }, { useGoogleMaps: false });
+    // console.log(location);
+    // [{"city": "샌프란시스코", "country": "미 합중국", "district": "Union Square", "isoCountryCode": "US", "name": "Powell St", "postalCode": "94108", "region": "CA", "street": "Ellis St", "streetNumber": "2–16", "subregion": "샌프란시스코", "timezone": "America/Los_Angeles"}]
+  };
+
   useEffect(() => {
     getWeather();
   }, []);
@@ -51,6 +91,7 @@ export default function App() {
           <Text style={styles.description}>Sunny</Text>
         </View>
       </ScrollView>
+      <StatusBar style="light" />
     </View>
   );
 }
