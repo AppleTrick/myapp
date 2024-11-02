@@ -9,6 +9,8 @@ export default function App() {
   const [city, setCity] = useState<null | string>('Loading');
   const [days, setDays] = useState([]); // 날씨를 배열형식으로 저장함
   const [ok, setOk] = useState(true);
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
 
   // 위치정보에 대한 데이터 가지고 오기
   const getWeather = async () => {
@@ -21,21 +23,29 @@ export default function App() {
       coords: { latitude, longitude },
     } = await Location.getCurrentPositionAsync({ accuracy: 5 });
 
+    setLatitude(String(latitude));
+    setLongitude(String(longitude));
+
     const location = await Location.reverseGeocodeAsync({ latitude, longitude }, { useGoogleMaps: false });
     setCity(location[0].city);
 
     // api 키
     const apiKey = 'YUrGMy0V%2BGWA4GKHG9QRq2bT3GqSRCeMa62ZdYVwD55XvIiZOi6uwwRpxIOk43tfLmPrUStNlSceZzdWk1UnZQ%3D%3D';
 
-    const url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${apiKey}&pageNo=1&numOfRows=10&dataType=JSON&base_date=${new Date().getFullYear()}${
-      new Date().getMonth() + 1
-    }${new Date().getDate()}&base_time=${new Date().getHours()}&nx=55&ny=127`;
+    let url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${apiKey}&pageNo=1&numOfRows=1000&dataType=JSON`;
+    const base_date = `&base_date=${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}`;
+    const base_time = `&base_time=${String(new Date().getHours()).padStart(2, '0')}00`;
+    // const base_time = `&base_time=1800`;
+    // const nx = `&nx=${latitude}`;
+    const nx = `&nx=62`;
+    // const ny = `&ny=${longitude}`;
+    const ny = `&ny=126`;
+    url = url + base_date + base_time + nx + ny;
 
     try {
       const response = await fetch(url);
       console.log(url);
       const json = await response.json();
-      console.log(json);
     } catch (error) {
       console.error(error);
     }
@@ -87,6 +97,8 @@ export default function App() {
       </View>
       <ScrollView pagingEnabled horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.weather}>
         <View style={styles.day}>
+          <Text>{latitude}</Text>
+          <Text>{longitude}</Text>
           <Text style={styles.temp}>28</Text>
           <Text style={styles.description}>Sunny</Text>
         </View>
