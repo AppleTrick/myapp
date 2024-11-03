@@ -3,6 +3,8 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, Dimensions } from 'react-native';
 import { dfsXYConv } from './utils/GeolocationService';
+import { dayWeatherSearch } from './services/weatherSearchService/DayWeatherSearch';
+import { WeekWeatherSearch } from './services/weatherSearchService/WeekWeatherSearch';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -29,6 +31,8 @@ export default function App() {
     const location = await Location.reverseGeocodeAsync({ latitude, longitude }, { useGoogleMaps: false });
     setCity(location[0].city);
 
+    WeekWeatherSearch();
+
     let nx: string;
     let ny: string;
 
@@ -37,6 +41,7 @@ export default function App() {
       ny = `&ny=${rs.y}`;
 
       const temperature = await dayWeatherSearch(nx, ny);
+
       setTemperature(temperature);
     } else {
       nx = `&nx=0`;

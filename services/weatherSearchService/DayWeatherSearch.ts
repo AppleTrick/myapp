@@ -1,4 +1,4 @@
-const dayWeatherSearch = async (nx: string, ny: string) => {
+export const dayWeatherSearch = async (nx: string, ny: string) => {
   // api 키
   const apiKey = 'YUrGMy0V%2BGWA4GKHG9QRq2bT3GqSRCeMa62ZdYVwD55XvIiZOi6uwwRpxIOk43tfLmPrUStNlSceZzdWk1UnZQ%3D%3D';
   // 정보조회 버전
