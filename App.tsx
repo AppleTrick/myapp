@@ -2,6 +2,7 @@ import * as Location from 'expo-location';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, Dimensions } from 'react-native';
+import { dfsXYConv } from './utils/GeolocationService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -9,8 +10,7 @@ export default function App() {
   const [city, setCity] = useState<null | string>('Loading');
   const [days, setDays] = useState([]); // 날씨를 배열형식으로 저장함
   const [ok, setOk] = useState(true);
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
+  const [temperature, setTemperature] = useState(0);
 
   // 위치정보에 대한 데이터 가지고 오기
   const getWeather = async () => {
@@ -23,31 +23,25 @@ export default function App() {
       coords: { latitude, longitude },
     } = await Location.getCurrentPositionAsync({ accuracy: 5 });
 
-    setLatitude(String(latitude));
-    setLongitude(String(longitude));
+    // 위도 경도를 기상청 api에 맞는 격자로 변환
+    const rs = dfsXYConv('toXY', latitude, longitude);
 
     const location = await Location.reverseGeocodeAsync({ latitude, longitude }, { useGoogleMaps: false });
     setCity(location[0].city);
 
-    // api 키
-    const apiKey = 'YUrGMy0V%2BGWA4GKHG9QRq2bT3GqSRCeMa62ZdYVwD55XvIiZOi6uwwRpxIOk43tfLmPrUStNlSceZzdWk1UnZQ%3D%3D';
+    let nx: string;
+    let ny: string;
 
-    let url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${apiKey}&pageNo=1&numOfRows=1000&dataType=JSON`;
-    const base_date = `&base_date=${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}`;
-    const base_time = `&base_time=${String(new Date().getHours()).padStart(2, '0')}00`;
-    // const base_time = `&base_time=1800`;
-    // const nx = `&nx=${latitude}`;
-    const nx = `&nx=62`;
-    // const ny = `&ny=${longitude}`;
-    const ny = `&ny=126`;
-    url = url + base_date + base_time + nx + ny;
+    if ('x' in rs && 'y' in rs) {
+      nx = `&nx=${rs.x}`;
+      ny = `&ny=${rs.y}`;
 
-    try {
-      const response = await fetch(url);
-      console.log(url);
-      const json = await response.json();
-    } catch (error) {
-      console.error(error);
+      const temperature = await dayWeatherSearch(nx, ny);
+      setTemperature(temperature);
+    } else {
+      nx = `&nx=0`;
+      ny = `&ny=0`;
+      setTemperature(0);
     }
   };
 
@@ -97,9 +91,8 @@ export default function App() {
       </View>
       <ScrollView pagingEnabled horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.weather}>
         <View style={styles.day}>
-          <Text>{latitude}</Text>
-          <Text>{longitude}</Text>
-          <Text style={styles.temp}>28</Text>
+          <Text style={styles.tempText}>현재 온도</Text>
+          <Text style={styles.temp}>{temperature}</Text>
           <Text style={styles.description}>Sunny</Text>
         </View>
       </ScrollView>
@@ -132,8 +125,12 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH,
     alignItems: 'center',
   },
-  temp: {
+  tempText: {
+    fontSize: 35,
     marginTop: 50,
+  },
+  temp: {
+    // marginTop: 50,
     fontSize: 178,
     fontWeight: '600',
   },
