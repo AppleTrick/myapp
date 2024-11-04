@@ -3,14 +3,15 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, Dimensions } from 'react-native';
 import { dfsXYConv } from './utils/GeolocationService';
-import { dayWeatherSearch } from './services/weatherSearchService/DayWeatherSearch';
+import { HourWeatherSearch } from './services/weatherSearchService/HourWeatherSearch';
+import { NowWeatherSearch } from './services/weatherSearchService/NowWeatherSearch';
 import { WeekWeatherSearch } from './services/weatherSearchService/WeekWeatherSearch';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function App() {
   const [city, setCity] = useState<null | string>('Loading');
-  const [days, setDays] = useState([]); // 날씨를 배열형식으로 저장함
+  const [timeTemperature, setTimeTemperature] = useState([]); // 날씨를 배열형식으로 저장함
   const [ok, setOk] = useState(true);
   const [temperature, setTemperature] = useState(0);
 
@@ -31,8 +32,6 @@ export default function App() {
     const location = await Location.reverseGeocodeAsync({ latitude, longitude }, { useGoogleMaps: false });
     setCity(location[0].city);
 
-    WeekWeatherSearch();
-
     let nx: string;
     let ny: string;
 
@@ -40,8 +39,11 @@ export default function App() {
       nx = `&nx=${rs.x}`;
       ny = `&ny=${rs.y}`;
 
-      const temperature = await dayWeatherSearch(nx, ny);
+      const temperature = await NowWeatherSearch(nx, ny);
+      const hourTemperature = await HourWeatherSearch(nx, ny);
+      await WeekWeatherSearch();
 
+      setTimeTemperature(hourTemperature);
       setTemperature(temperature);
     } else {
       nx = `&nx=0`;
