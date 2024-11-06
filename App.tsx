@@ -41,7 +41,7 @@ export default function App() {
 
       const temperature = await NowWeatherSearch(nx, ny);
       const hourTemperature = await HourWeatherSearch(nx, ny);
-      await WeekWeatherSearch();
+      const WeekTemperature = await WeekWeatherSearch();
 
       setTimeTemperature(hourTemperature);
       setTemperature(temperature);

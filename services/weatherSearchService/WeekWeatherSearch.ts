@@ -21,9 +21,36 @@ export const WeekWeatherSearch = async () => {
   const tmFc = formatDate(today);
 
   let url = `https://apis.data.go.kr/1360000/MidFcstInfoService/${forecast}?serviceKey=${apiKey}&pageNo=1&numOfRows=10&dataType=JSON&regId=${AreaCode}&tmFc=${tmFc}`;
+
   const response = await fetch(url);
   const json = await response.json();
   const items = json.response.body.items.item;
 
-  console.log(items);
+  const formatTemperatureData = (items: any) => {
+    // 결과를 저장할 배열
+    const result = [];
+
+    // 3일부터 10일까지의 데이터 처리
+    for (let day = 3; day <= 10; day++) {
+      const maxKey = `taMax${day}`;
+      const minKey = `taMin${day}`;
+
+      // 각 일자별 최고/최저 기온 객체 생성
+      const dayData = {
+        day: `${day}일 후`,
+        maxTemp: items[0][maxKey],
+        minTemp: items[0][minKey],
+      };
+
+      result.push(dayData);
+    }
+
+    return result;
+  };
+
+  const formattedData = formatTemperatureData(items);
+
+  console.log(formattedData);
+
+  return formattedData;
 };

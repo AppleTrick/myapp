@@ -10,6 +10,7 @@ export const HourWeatherSearch = async (nx: string, ny: string) => {
 
   // API를 대상으로 한 기준 시간
   //   const base_time_index = [2, 5, 8, 11, 14, 17, 20, 23];
+  // 14 시 안됨 08시 안됨
 
   // 현재 시간
   const getDayByBaseTime = (baseTime: string) => {
@@ -41,18 +42,19 @@ export const HourWeatherSearch = async (nx: string, ny: string) => {
   // 검색기준이 되는 날짜
   const base_date = `&base_date=${year}${month}${day}`;
 
-  let url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/${forecast}?serviceKey=${apiKey}&pageNo=1&numOfRows=500&dataType=JSON`;
+  let url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/${forecast}?serviceKey=${apiKey}&pageNo=1&numOfRows=100&dataType=JSON`;
   url = url + base_date + `&base_time=` + base_time + nx + ny;
 
+  console.log(url);
+
   const response = await fetch(url);
-
   const json = await response.json();
-
   const items = json.response.body.items.item;
 
   // TMP(현재 온도) 데이터만 추출 =>
+  // TMX( 일 최고기온)
+  // TMN (일 최저기온)
   const selctCategoryData = items.filter((item: any) => ['TMP'].includes(item.category));
-
   // 새롭게 날짜 데이터 만들어주는 함수
   const parseDateTime = (fcstDate: string, fcstTime: string) => {
     const year = fcstDate.substring(0, 4);
@@ -70,41 +72,12 @@ export const HourWeatherSearch = async (nx: string, ny: string) => {
     );
   };
 
+  // 현재시간 아래의 데이터들은 날려버림  // 온도에관련된 미래 정보만 남겨둠
   const filteredData = selctCategoryData
     .filter((item: any) => {
       const forecastDateTime = parseDateTime(item.fcstDate, item.fcstTime);
       return forecastDateTime >= today;
     })
     .map((item: any) => Number(item.fcstValue));
-
   return filteredData;
 };
-
-//     TMP : 온도
-//    - 하늘상태(SKY) 코드 : 맑음(1), 구름많음(3), 흐림(4)
-//    - 강수형태(PTY) 코드 : (단기) 없음(0), 비(1), 비/눈(2), 눈(3), 소나기(4)
-//   if (Sum <= 130) {
-//     // 2시 10분전
-//     const base_time = '2300';
-//   } else if (Sum <= 310) {
-//     // 5시 10분전
-//     const base_time = '0200';
-//   } else if (Sum <= 490) {
-//     // 8시 10분전
-//     const base_time = '0500';
-//   } else if (Sum <= 670) {
-//     // 11시 10분전
-//     const base_time = '0800';
-//   } else if (Sum <= 850) {
-//     // 14시 10분전
-//     const base_time = '1100';
-//   } else if (Sum <= 1030) {
-//     // 17시 10분전
-//     const base_time = '1400';
-//   } else if (Sum <= 1030) {
-//     // 20시 10분전
-//     const base_time = '1700';
-//   } else if (Sum <= 1030) {
-//     // 23시 10분전
-//     const base_time = '2000';
-//   }

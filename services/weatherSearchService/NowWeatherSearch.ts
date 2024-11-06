@@ -24,6 +24,9 @@ export const NowWeatherSearch = async (nx: string, ny: string) => {
 
   const items = json.response.body.items.item;
   const temperature = items.find((item: any) => item.category === 'T1H').obsrValue;
+  console.log(url);
+
+  console.log('temperature', temperature);
 
   return temperature;
 };
