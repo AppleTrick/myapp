@@ -6,6 +6,7 @@ import { dfsXYConv } from './utils/GeolocationService';
 import { HourWeatherSearch } from './services/weatherSearchService/HourWeatherSearch';
 import { NowWeatherSearch } from './services/weatherSearchService/NowWeatherSearch';
 import { WeekWeatherSearch } from './services/weatherSearchService/WeekWeatherSearch';
+import { GetWeatherData } from './services/weatherSearchService/WeatherData';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -40,11 +41,13 @@ export default function App() {
       ny = `&ny=${rs.y}`;
 
       const temperature = await NowWeatherSearch(nx, ny);
-      const hourTemperature = await HourWeatherSearch(nx, ny);
-      const WeekTemperature = await WeekWeatherSearch();
+      // const hourTemperature = await HourWeatherSearch(nx, ny);
+      // const WeekTemperature = await WeekWeatherSearch();
 
-      setTimeTemperature(hourTemperature);
-      setTemperature(temperature);
+      // setTimeTemperature(hourTemperature);
+      // setTemperature(temperature);
+
+      await GetWeatherData(nx, ny);
     } else {
       nx = `&nx=0`;
       ny = `&ny=0`;

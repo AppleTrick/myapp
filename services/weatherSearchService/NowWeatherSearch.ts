@@ -10,7 +10,6 @@ export const NowWeatherSearch = async (nx: string, ny: string) => {
 
   // 검색하는 날짜
   const base_date = `&base_date=${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-
   const base_time = Minute <= 10 ? `&base_time=${String(today.getHours() - 1).padStart(2, '0')}00` : `&base_time=${String(today.getHours()).padStart(2, '0')}00`;
 
   // 기본 URL
@@ -19,14 +18,10 @@ export const NowWeatherSearch = async (nx: string, ny: string) => {
   url = url + base_date + base_time + nx + ny;
 
   const response = await fetch(url);
-
   const json = await response.json();
-
   const items = json.response.body.items.item;
   const temperature = items.find((item: any) => item.category === 'T1H').obsrValue;
-  console.log(url);
-
-  console.log('temperature', temperature);
+  // console.log(url);
 
   return temperature;
 };
