@@ -1,3 +1,5 @@
+import { fetchAndParseJSON } from '../../utils/FetchAndParseJSON';
+
 export const GetWeatherData = async (nx: any, ny: any) => {
   // api 키
   const apiKey = 'YUrGMy0V%2BGWA4GKHG9QRq2bT3GqSRCeMa62ZdYVwD55XvIiZOi6uwwRpxIOk43tfLmPrUStNlSceZzdWk1UnZQ%3D%3D';
@@ -85,6 +87,7 @@ export const GetWeatherData = async (nx: any, ny: any) => {
     // 조건에 맞는 base_time을 찾기
     // 검색할때 기준 시간 찾기
     const base_time = baseTimes[timeLimits.findIndex((limit) => Sum <= limit)];
+    const base_time_onlyTemp = '1100';
 
     // base_time의 기준으로 날짜를 찾음
     // ex 예를 들어 base_time 이 23:00 경우에는 날짜가 하루전으로 가야되기 때문
@@ -93,12 +96,18 @@ export const GetWeatherData = async (nx: any, ny: any) => {
     const base_date = `&base_date=${year}${month}${day}`;
 
     const url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/${forecast2}?serviceKey=${apiKey}&pageNo=1&numOfRows=1000&dataType=JSON${base_date}&base_time=${base_time}${nx}${ny}`;
+    const url_onlyTemp = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/${forecast2}?serviceKey=${apiKey}&pageNo=1&numOfRows=1000&dataType=JSON${base_date}&base_time=${base_time_onlyTemp}${nx}${ny}`;
 
-    const response = await fetch(url);
-    const json = await response.json();
-    const items = json.response.body.items.item;
+    const items = fetchAndParseJSON(url);
+    const items_onlyTemp = fetchAndParseJSON(url_onlyTemp);
 
-    const getHourData = items.filter((item: any) => ['TMP', 'SKY', 'TMN', 'TMX'].includes(item.category));
+    const getHourData = (await items).filter((item: any) => ['TMP', 'SKY'].includes(item.category));
+    const getHourMaxMin = (await items_onlyTemp).filter((item: any) => ['TMN', 'TMX'].includes(item.category));
+
+    console.log(getHourData);
+    console.log(getHourMaxMin);
+
+    return getHourData;
   };
 
   const GetWeekTemperatureData = async () => {
@@ -113,6 +122,30 @@ export const GetWeatherData = async (nx: any, ny: any) => {
     const response = await fetch(url);
     const json = await response.json();
     const items = json.response.body.items.item;
+
+    const formatTemperatureData = (items: any) => {
+      // 결과를 저장할 배열
+      const result = [];
+
+      // 3일부터 10일까지의 데이터 처리
+      for (let day = 3; day <= 10; day++) {
+        const maxKey = `taMax${day}`;
+        const minKey = `taMin${day}`;
+
+        // 각 일자별 최고/최저 기온 객체 생성
+        const dayData = {
+          day: `${day}일 후`,
+          maxTemp: items[0][maxKey],
+          minTemp: items[0][minKey],
+        };
+
+        result.push(dayData);
+      }
+
+      return result;
+    };
+
+    const formattedData = formatTemperatureData(items);
   };
 
   const GetWeekWeatherData = async () => {
@@ -137,21 +170,3 @@ export const GetWeatherData = async (nx: any, ny: any) => {
 
   return 0;
 };
-
-// 값을 종합해서 리턴 시킬꺼임
-// 형식
-// {
-//     현재온도
-//     현재날시;
-// }
-// 지금 날씨
-// 온도
-// 내일 날씨
-// 모레 날씨
-// N 일뒤
-//  최저기온
-//  최고기온
-//  오전날씨
-//  오후날씨
-//  오전강수
-//  오후강수
