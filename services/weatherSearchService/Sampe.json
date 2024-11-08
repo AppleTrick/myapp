@@ -1,7 +1,13 @@
 [
-  { "baseDate": "20241107", "baseTime": "1100", "category": "TMX", "fcstDate": "20241107", "fcstTime": "1500", "fcstValue": "15.0", "nx": 62, "ny": 125 },
-  { "baseDate": "20241107", "baseTime": "1100", "category": "TMN", "fcstDate": "20241108", "fcstTime": "0600", "fcstValue": "5.0", "nx": 62, "ny": 125 },
-  { "baseDate": "20241107", "baseTime": "1100", "category": "TMX", "fcstDate": "20241108", "fcstTime": "1500", "fcstValue": "18.0", "nx": 62, "ny": 125 },
-  { "baseDate": "20241107", "baseTime": "1100", "category": "TMN", "fcstDate": "20241109", "fcstTime": "0600", "fcstValue": "8.0", "nx": 62, "ny": 125 },
-  { "baseDate": "20241107", "baseTime": "1100", "category": "TMX", "fcstDate": "20241109", "fcstTime": "1500", "fcstValue": "19.0", "nx": 62, "ny": 125 }
+  { "fcstDate": "20241108", "maxTemp": 18, "minTemp": 4 },
+  { "fcstDate": "20241109", "maxTemp": 19, "minTemp": 7 },
+  { "fcstDate": "20241110", "maxTemp": 19, "minTemp": 10 },
+  { "fcstDate": "20241111", "maxTemp": 19, "minTemp": 10 },
+  { "fcstDate": "20241112", "maxTemp": 18, "minTemp": 10 },
+  { "fcstDate": "20241113", "maxTemp": 19, "minTemp": 9 },
+  { "fcstDate": "20241114", "maxTemp": 17, "minTemp": 11 },
+  { "fcstDate": "20241115", "maxTemp": 18, "minTemp": 13 },
+  { "fcstDate": "20241116", "maxTemp": 18, "minTemp": 11 },
+  { "fcstDate": "20241117", "maxTemp": 16, "minTemp": 10 },
+  { "fcstDate": "20241118", "maxTemp": 12, "minTemp": 7 }
 ]
