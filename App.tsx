@@ -3,18 +3,16 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, Dimensions } from 'react-native';
 import { dfsXYConv } from './utils/GeolocationService';
-import { HourWeatherSearch } from './services/weatherSearchService/HourWeatherSearch';
-import { NowWeatherSearch } from './services/weatherSearchService/NowWeatherSearch';
-import { WeekWeatherSearch } from './services/weatherSearchService/WeekWeatherSearch';
-import { GetWeatherData } from './services/weatherSearchService/WeatherData';
+import { TemperatureDataType } from './types/weatherTypes';
+import { GetWeatherData } from './services/weatherSearchService/WeatherData';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function App() {
   const [city, setCity] = useState<null | string>('Loading');
-  const [timeTemperature, setTimeTemperature] = useState([]); // 날씨를 배열형식으로 저장함
+  const [weekTemperature, setWeekTemperature] = useState<TemperatureDataType[] | null>(null);
   const [ok, setOk] = useState(true);
-  const [temperature, setTemperature] = useState(0);
+  const [temperature, setTemperature] = useState<string | null>('0');
 
   // 위치정보에 대한 데이터 가지고 오기
   const getWeather = async () => {
@@ -40,54 +38,16 @@ export default function App() {
       nx = `&nx=${rs.x}`;
       ny = `&ny=${rs.y}`;
 
-      const temperature = await NowWeatherSearch(nx, ny);
-      // const hourTemperature = await HourWeatherSearch(nx, ny);
-      // const WeekTemperature = await WeekWeatherSearch();
-
-      // setTimeTemperature(hourTemperature);
-      // setTemperature(temperature);
-
-      await GetWeatherData(nx, ny);
+      const data = await GetWeatherData(nx, ny);
+      if (data) {
+        setTemperature(data.today.temperature);
+        setWeekTemperature(data.week);
+      }
     } else {
       nx = `&nx=0`;
       ny = `&ny=0`;
-      setTemperature(0);
+      setTemperature('0');
     }
-  };
-
-  const ask = async () => {
-    // 1. 권한에 대한 여부확인
-    // const premission = await Location.requestForegroundPermissionsAsync();
-    // console.log(premission);
-    // {"canAskAgain": true, "expires": "never", "granted": true, "status": "granted"}
-    // grant => 권한에 대한 변경권
-    // const { granted } = await Location.requestForegroundPermissionsAsync();
-    // if (!granted) {
-    //   setOk(false);
-    // }
-    // 위치정보 가지고 오기
-    // const loaction = await Location.getCurrentPositionAsync({ accuracy: 5 });
-    // console.log(loaction);
-    // {
-    //   "coords":
-    //       {
-    //         "accuracy": 5,
-    //         "altitude": 0,
-    //         "altitudeAccuracy": -1,
-    //         "heading": -1,
-    //         "latitude": 37.785834,
-    //         "longitude": -122.406417,
-    //         "speed": -1
-    //       },
-    //     "timestamp": 1730456103939.91
-    // }
-    // const {
-    //   coords: { latitude, longitude },
-    // } = await Location.getCurrentPositionAsync({ accuracy: 5 });
-    // 3. 위치정보 다시 가지고 오기
-    // const location = await Location.reverseGeocodeAsync({ latitude, longitude }, { useGoogleMaps: false });
-    // console.log(location);
-    // [{"city": "샌프란시스코", "country": "미 합중국", "district": "Union Square", "isoCountryCode": "US", "name": "Powell St", "postalCode": "94108", "region": "CA", "street": "Ellis St", "streetNumber": "2–16", "subregion": "샌프란시스코", "timezone": "America/Los_Angeles"}]
   };
 
   useEffect(() => {

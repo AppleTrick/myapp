@@ -1,4 +1,5 @@
 import { fetchAndParseJSON } from '../../utils/FetchAndParseJSON';
+import { formatTemperatureData, formatTodayTemperature, transformDataMaxTempMinTemp } from '../../utils/TransformData';
 
 export const GetWeatherData = async (nx: any, ny: any) => {
   // api 키
@@ -19,16 +20,18 @@ export const GetWeatherData = async (nx: any, ny: any) => {
   const minute = today.getMinutes();
   const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
 
+  // 현재 온도와 날씨 상태 데이터를 가지고오는 함수
   const GetNowWeatherData = async () => {
     const base_time = minute <= 10 ? `&base_time=${String(hour - 1).padStart(2, '0')}00` : `&base_time=${String(hour).padStart(2, '0')}00`;
     const base_date = `&base_date=${year}${month}${day}`;
     const url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/${forecast}?serviceKey=${apiKey}&pageNo=1&numOfRows=100&dataType=JSON${base_date}${base_time}${nx}${ny}`;
     const items = await fetchAndParseJSON(url);
-    const getNowData = items.filter((item: any) => ['T1H', 'PTY'].includes(item.category));
-    return getNowData;
+    const result = formatTodayTemperature(items.filter((item: any) => ['T1H', 'PTY'].includes(item.category)));
+
+    return result;
   };
 
-  // 시간별 날씨에 대한 정보를 가지고오는 함수
+  // 1시간 온도와 날씨에 대한 정보를 가지고오는 함수
   const GetHourWeatherData = async () => {
     const getDayByBaseTime = (baseTime: string) => {
       return baseTime === '2300' ? String(yesterday.getDate()).padStart(2, '0') : String(today.getDate()).padStart(2, '0');
@@ -42,11 +45,12 @@ export const GetWeatherData = async (nx: any, ny: any) => {
     const base_date = `&base_date=${year}${month}${day}`;
     const url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/${forecast2}?serviceKey=${apiKey}&pageNo=1&numOfRows=1000&dataType=JSON${base_date}&base_time=${base_time}${nx}${ny}`;
     const items = await fetchAndParseJSON(url);
-    const getHourData = items.filter((item: any) => ['TMP', 'SKY'].includes(item.category));
-    return getHourData;
+    const result = items.filter((item: any) => ['TMP', 'SKY'].includes(item.category));
+    return result;
   };
 
-  // 오늘 최저기온 최고기온에 대한 정보를 가지고 오는 함수
+  // 오늘, 내일, 모레의 최고기온, 최저기온을 가지고 오는 함수
+  // 오늘 02:00 시 기준으로 검색을 한다.
   const getMaxMinTemperatureHourData = async () => {
     const Sum = hour * 60 + minute;
     const MaxMinday = Sum < 130 ? String(yesterday.getDate()).padStart(2, '0') : String(today.getDate()).padStart(2, '0');
@@ -55,80 +59,26 @@ export const GetWeatherData = async (nx: any, ny: any) => {
     const url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/${forecast2}?serviceKey=${apiKey}&pageNo=1&numOfRows=1000&dataType=JSON${base_date}&base_time=${base_time}${nx}${ny}`;
     const items = await fetchAndParseJSON(url);
     const getHourMaxMin = items.filter((item: any) => ['TMN', 'TMX'].includes(item.category));
-
-    const transformData = (data: any) => {
-      const result = [];
-      const map = new Map();
-
-      data.forEach((item: any) => {
-        const { fcstDate, category, fcstValue } = item;
-
-        // 날짜별로 데이터를 분리하여 Map에 저장
-        if (!map.has(fcstDate)) {
-          map.set(fcstDate, { fcstDate });
-        }
-        if (category === 'TMX') {
-          map.get(fcstDate).maxTemp = Number(fcstValue);
-        } else if (category === 'TMN') {
-          map.get(fcstDate).minTemp = Number(fcstValue);
-        }
-      });
-
-      // Map의 값들을 배열로 변환
-      for (const value of map.values()) {
-        result.push(value);
-      }
-
-      return result;
-    };
-
-    const result = transformData(getHourMaxMin);
+    const result = transformDataMaxTempMinTemp(getHourMaxMin);
 
     return result;
   };
 
-  // 주간 온도 데이터
+  // 3일 후부터 10일까지의 최고기온 최저기온을 가지고 오는 함수
   const GetWeekTemperatureData = async () => {
     const AreaCode = `11B10101`; // 서울
-
     const formatDate = (date: Date) => {
       const timeCode = hour < 6 || hour >= 18 ? '1800' : '0600';
       return `${year}${month}${day}${timeCode}`;
     };
-
     const tmFc = formatDate(today);
     const url = `https://apis.data.go.kr/1360000/MidFcstInfoService/${forecast3}?serviceKey=${apiKey}&pageNo=1&numOfRows=10&dataType=JSON&regId=${AreaCode}&tmFc=${tmFc}`;
     const items = await fetchAndParseJSON(url);
-
-    const formatTemperatureData = (items: any) => {
-      const result = [];
-
-      for (let day = 3; day <= 10; day++) {
-        const maxKey = `taMax${day}`;
-        const minKey = `taMin${day}`;
-
-        const forecastDate = new Date(today);
-        forecastDate.setDate(today.getDate() + Number(day));
-        const formattedDate = `${forecastDate.getFullYear()}${String(forecastDate.getMonth() + 1).padStart(2, '0')}${String(forecastDate.getDate()).padStart(2, '0')}`;
-
-        const dayData = {
-          fcstDate: formattedDate,
-          maxTemp: items[0][maxKey],
-          minTemp: items[0][minKey],
-        };
-
-        result.push(dayData);
-      }
-
-      return result;
-    };
-
-    const formattedData = formatTemperatureData(items);
-
+    const formattedData = formatTemperatureData(items, today);
     return formattedData;
   };
 
-  // 주간 기상 데이터
+  // 3일 후부터 10일까지의 날씨에 대한 정보를 가지고 오는 함수
   const GetWeekWeatherData = async () => {
     const AreaCode = '11B00000'; // 서울 경기 인천
 
@@ -164,13 +114,14 @@ export const GetWeatherData = async (nx: any, ny: any) => {
 
   const A = await getMaxMinTemperatureHourData();
   const B = await GetWeekTemperatureData();
-  const weekTemperature = [...A, ...B];
-  console.log(weekTemperature);
-  GetNowWeatherData();
-  GetHourWeatherData();
-  GetWeekWeatherData();
+  const nowData = await GetNowWeatherData();
 
-  return 0;
+  const result = {
+    today: nowData,
+    week: [...A, ...B],
+  };
+
+  return result;
 };
 
 // 각 시간 구간의 경계와 base_time 값을 배열에 저장
