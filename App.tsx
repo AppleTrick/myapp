@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Text, View, Dimensions } from 'react-native';
 import { dfsXYConv } from './utils/GeolocationService';
 import { TemperatureDataType } from './types/weatherTypes';
 import { GetWeatherData } from './services/weatherSearchService/WeatherData';
+import WeatherScroll from './components/WeekForecast';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -13,6 +14,7 @@ export default function App() {
   const [weekTemperature, setWeekTemperature] = useState<TemperatureDataType[] | null>(null);
   const [ok, setOk] = useState(true);
   const [temperature, setTemperature] = useState<string | null>('0');
+  const [precipitation, setPrecipitation] = useState<string | null>(null);
 
   // 위치정보에 대한 데이터 가지고 오기
   const getWeather = async () => {
@@ -26,21 +28,21 @@ export default function App() {
     } = await Location.getCurrentPositionAsync({ accuracy: 5 });
 
     // 위도 경도를 기상청 api에 맞는 격자로 변환
-    const rs = dfsXYConv('toXY', latitude, longitude);
 
     const location = await Location.reverseGeocodeAsync({ latitude, longitude }, { useGoogleMaps: false });
+    const rs = dfsXYConv('toXY', latitude, longitude);
+
     setCity(location[0].city);
 
     let nx: string;
     let ny: string;
 
     if ('x' in rs && 'y' in rs) {
-      nx = `&nx=${rs.x}`;
-      ny = `&ny=${rs.y}`;
+      const data = await GetWeatherData(`&nx=${rs.x}`, `&ny=${rs.y}`);
 
-      const data = await GetWeatherData(nx, ny);
       if (data) {
         setTemperature(data.today.temperature);
+        setPrecipitation(data.today.precipitation);
         setWeekTemperature(data.week);
       }
     } else {
@@ -63,8 +65,9 @@ export default function App() {
         <View style={styles.day}>
           <Text style={styles.tempText}>현재 온도</Text>
           <Text style={styles.temp}>{temperature}</Text>
-          <Text style={styles.description}>Sunny</Text>
+          <Text style={styles.description}>{precipitation}</Text>
         </View>
+        {weekTemperature && weekTemperature.map((item) => <WeatherScroll forecast={item} key={item.fcstDate} />)}
       </ScrollView>
       <StatusBar style="light" />
     </View>
