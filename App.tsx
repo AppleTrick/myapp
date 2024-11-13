@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, Dimensions } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View, Dimensions } from 'react-native';
 import { dfsXYConv } from './utils/GeolocationService';
 import { TemperatureDataType } from './types/weatherTypes';
 import { GetWeatherData } from './services/weatherSearchService/WeatherData';
@@ -11,7 +11,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function App() {
   const [city, setCity] = useState<null | string>('Loading');
-  const [weekTemperature, setWeekTemperature] = useState<TemperatureDataType[] | null>(null);
+  const [weekTemperature, setWeekTemperature] = useState<TemperatureDataType[] | null>([]);
   const [ok, setOk] = useState(true);
   const [temperature, setTemperature] = useState<string | null>('0');
   const [precipitation, setPrecipitation] = useState<string | null>(null);
@@ -26,8 +26,6 @@ export default function App() {
     const {
       coords: { latitude, longitude },
     } = await Location.getCurrentPositionAsync({ accuracy: 5 });
-
-    // 위도 경도를 기상청 api에 맞는 격자로 변환
 
     const location = await Location.reverseGeocodeAsync({ latitude, longitude }, { useGoogleMaps: false });
     const rs = dfsXYConv('toXY', latitude, longitude);
@@ -62,12 +60,20 @@ export default function App() {
         <Text style={styles.cityName}>{city}</Text>
       </View>
       <ScrollView pagingEnabled horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.weather}>
-        <View style={styles.day}>
-          <Text style={styles.tempText}>현재 온도</Text>
-          <Text style={styles.temp}>{temperature}</Text>
-          <Text style={styles.description}>{precipitation}</Text>
-        </View>
-        {weekTemperature && weekTemperature.map((item) => <WeatherScroll forecast={item} key={item.fcstDate} />)}
+        {weekTemperature?.length === 0 ? (
+          <View style={styles.day}>
+            <ActivityIndicator color="white" size="large" style={{ marginTop: 10 }} />
+          </View>
+        ) : (
+          <>
+            <View style={styles.day}>
+              <Text style={styles.tempText}>현재 온도</Text>
+              <Text style={styles.temp}>{Number(temperature).toFixed(1)} °C</Text>
+              <Text style={styles.description}>{precipitation}</Text>
+            </View>
+            {weekTemperature && weekTemperature.map((item, index) => <WeatherScroll forecast={item} key={item.fcstDate} index={index} />)}
+          </>
+        )}
       </ScrollView>
       <StatusBar style="light" />
     </View>
@@ -83,32 +89,38 @@ const styles = StyleSheet.create({
     flex: 1.2,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'royalblue',
   },
   cityName: {
-    fontSize: 68,
+    fontSize: 58,
     fontWeight: '500',
+    color: 'white',
   },
   weather: {
     // backgroundColor: 'blue',
   },
   day: {
-    // flex: 1,
-    // backgroundColor: 'blue',
     width: SCREEN_WIDTH,
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
   },
   tempText: {
     fontSize: 35,
     marginTop: 50,
-  },
-  temp: {
-    // marginTop: 50,
-    fontSize: 178,
     fontWeight: '600',
+    color: 'white',
   },
+
+  temp: {
+    marginTop: 10,
+    fontSize: 100,
+    fontWeight: '600',
+    color: 'white',
+  },
+
   description: {
-    marginTop: -30,
-    fontSize: 60,
+    marginTop: -5,
+    fontSize: 25,
+    color: 'white',
+    fontWeight: '500',
   },
 });

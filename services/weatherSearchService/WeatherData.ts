@@ -121,8 +121,6 @@ export const GetWeatherData = async (nx: any, ny: any) => {
     week: [...A, ...B],
   };
 
-  console.log(result);
-
   return result;
 };
 
