@@ -1,9 +1,10 @@
 import { fetchAndParseJSON } from '../../utils/FetchAndParseJSON';
 import { formatTemperatureData, formatTodayTemperature, transformDataMaxTempMinTemp } from '../../utils/TransformData';
+import { API_KEY } from '@env';
 
 export const GetWeatherData = async (nx: any, ny: any) => {
   // api 키
-  const apiKey = 'YUrGMy0V%2BGWA4GKHG9QRq2bT3GqSRCeMa62ZdYVwD55XvIiZOi6uwwRpxIOk43tfLmPrUStNlSceZzdWk1UnZQ%3D%3D';
+  const apiKey = API_KEY;
 
   // 정보조회 버전
   const forecast = `getUltraSrtNcst`; // 초단기실황조회
