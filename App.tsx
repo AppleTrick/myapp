@@ -6,6 +6,7 @@ import { dfsXYConv } from './utils/GeolocationService';
 import { TemperatureDataType } from './types/weatherTypes';
 import { GetWeatherData } from './services/weatherSearchService/WeatherData';
 import WeatherScroll from './components/WeekForecast';
+import { useFonts } from 'expo-font';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -15,6 +16,10 @@ export default function App() {
   const [ok, setOk] = useState(true);
   const [temperature, setTemperature] = useState<string | null>('0');
   const [precipitation, setPrecipitation] = useState<string | null>(null);
+
+  const [fontsLoaded] = useFonts({
+    JUA: require('./assets/fonts/BMJUA_otf.otf'),
+  });
 
   // 위치정보에 대한 데이터 가지고 오기
   const getWeather = async () => {
@@ -91,6 +96,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cityName: {
+    fontFamily: 'JUA',
     fontSize: 58,
     fontWeight: '500',
     color: 'white',
@@ -104,6 +110,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   tempText: {
+    fontFamily: 'JUA',
     fontSize: 35,
     marginTop: 50,
     fontWeight: '600',
@@ -111,6 +118,7 @@ const styles = StyleSheet.create({
   },
 
   temp: {
+    fontFamily: 'JUA',
     marginTop: 10,
     fontSize: 100,
     fontWeight: '600',
